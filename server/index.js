@@ -45,7 +45,8 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 });
 
 // MongoDB connection
-mongoose.connect('mongodb://localhost:27017/mern-chat', {
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/mern-chat';
+mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
@@ -87,6 +88,14 @@ app.get('/', (req, res) => {
 
 app.use('/api/messages', messagesRouter);
 app.use('/api/rooms', roomsRouter);
+
+// Serve static files from the React app in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
